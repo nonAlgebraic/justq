@@ -1,0 +1,14 @@
+overwrite: true
+schema:
+  - https://justq.herokuapp.com/v1/graphql:
+      headers:
+        x-hasura-admin-secret: ${HASURA_ADMIN_SECRET}
+# documents: 'src/**/*.graphql'
+generates:
+  src/generated/graphql.d.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
+  ./graphql.schema.json:
+    plugins:
+      - 'introspection'

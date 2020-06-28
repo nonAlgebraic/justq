@@ -1,0 +1,7 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "jsdom",
+  "snapshotSerializers": ["jest-emotion"],
+  "collectCoverageFrom": ["src/**/*.tsx", "!src/main.tsx"],
+  "setupFilesAfterEnv": ["./jest.setup.tsx"]
+}

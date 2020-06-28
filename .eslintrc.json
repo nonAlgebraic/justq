@@ -1,0 +1,20 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": ["./tsconfig.json"]
+  },
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint-config-standard-with-typescript",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "preact",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended",
+    "plugin:jest/recommended",
+    "plugin:jsx-a11y/recommended"
+  ],
+  "ignorePatterns": ["public/", "node_modules/"],
+  "rules": {
+    "import/no-absolute-path": "off"
+  }
+}

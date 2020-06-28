@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App Renders 1`] = `
+.emotion-0 {
+  color: red;
+}
+
+<div>
+  <div
+    class="emotion-0"
+  >
+    Hello, world!!!
+  </div>
+</div>
+`;
