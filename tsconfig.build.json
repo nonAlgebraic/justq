@@ -3,7 +3,6 @@
   "include": ["src"],
   "exclude": ["src/**/*.test.tsx"],
   "compilerOptions": {
-    "outDir": "public",
-    "sourceMap": true
+    "outDir": "public"
   }
 }

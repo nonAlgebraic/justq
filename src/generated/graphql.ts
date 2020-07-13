@@ -1,3 +1,6 @@
+import { GraphQLClient } from 'graphql-request';
+import { print } from 'graphql';
+import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: any }> = { [K in keyof T]: T[K] };
 /** All built-in and custom scalars, mapped to their actual values */
@@ -7,7 +10,6 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  uuid: any;
 };
 
 /** expression to compare columns of type String. All fields are combined with logical 'AND'. */
@@ -103,7 +105,7 @@ export type Mutation_RootDelete_UserArgs = {
 
 /** mutation root */
 export type Mutation_RootDelete_User_By_PkArgs = {
-  id: Scalars['uuid'];
+  id: Scalars['String'];
 };
 
 
@@ -304,7 +306,7 @@ export type Query_RootUser_AggregateArgs = {
 
 /** query root */
 export type Query_RootUser_By_PkArgs = {
-  id: Scalars['uuid'];
+  id: Scalars['String'];
 };
 
 /** columns and relationships of "queue" */
@@ -733,13 +735,13 @@ export type Subscription_RootUser_AggregateArgs = {
 
 /** subscription root */
 export type Subscription_RootUser_By_PkArgs = {
-  id: Scalars['uuid'];
+  id: Scalars['String'];
 };
 
 /** columns and relationships of "user" */
 export type User = {
   __typename?: 'user';
-  id: Scalars['uuid'];
+  id: Scalars['String'];
   name: Scalars['String'];
   /** An object relationship */
   queue?: Maybe<Queue>;
@@ -789,7 +791,7 @@ export type User_Bool_Exp = {
   _and?: Maybe<Array<Maybe<User_Bool_Exp>>>;
   _not?: Maybe<User_Bool_Exp>;
   _or?: Maybe<Array<Maybe<User_Bool_Exp>>>;
-  id?: Maybe<Uuid_Comparison_Exp>;
+  id?: Maybe<String_Comparison_Exp>;
   name?: Maybe<String_Comparison_Exp>;
   queue?: Maybe<Queue_Bool_Exp>;
   queueId?: Maybe<String_Comparison_Exp>;
@@ -807,7 +809,7 @@ export enum User_Constraint {
 
 /** input type for inserting data into table "user" */
 export type User_Insert_Input = {
-  id?: Maybe<Scalars['uuid']>;
+  id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   queue?: Maybe<Queue_Obj_Rel_Insert_Input>;
   queueId?: Maybe<Scalars['String']>;
@@ -818,7 +820,7 @@ export type User_Insert_Input = {
 /** aggregate max on columns */
 export type User_Max_Fields = {
   __typename?: 'user_max_fields';
-  id?: Maybe<Scalars['uuid']>;
+  id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   queueId?: Maybe<Scalars['String']>;
   roomId?: Maybe<Scalars['String']>;
@@ -835,7 +837,7 @@ export type User_Max_Order_By = {
 /** aggregate min on columns */
 export type User_Min_Fields = {
   __typename?: 'user_min_fields';
-  id?: Maybe<Scalars['uuid']>;
+  id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   queueId?: Maybe<Scalars['String']>;
   roomId?: Maybe<Scalars['String']>;
@@ -883,7 +885,7 @@ export type User_Order_By = {
 
 /** primary key columns input for table: "user" */
 export type User_Pk_Columns_Input = {
-  id: Scalars['uuid'];
+  id: Scalars['String'];
 };
 
 /** select columns of table "user" */
@@ -900,7 +902,7 @@ export enum User_Select_Column {
 
 /** input type for updating data in table "user" */
 export type User_Set_Input = {
-  id?: Maybe<Scalars['uuid']>;
+  id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   queueId?: Maybe<Scalars['String']>;
   roomId?: Maybe<Scalars['String']>;
@@ -918,17 +920,45 @@ export enum User_Update_Column {
   RoomId = 'roomId'
 }
 
+export type ConnectMutationVariables = Exact<{
+  name: Scalars['String'];
+}>;
 
-/** expression to compare columns of type uuid. All fields are combined with logical 'AND'. */
-export type Uuid_Comparison_Exp = {
-  _eq?: Maybe<Scalars['uuid']>;
-  _gt?: Maybe<Scalars['uuid']>;
-  _gte?: Maybe<Scalars['uuid']>;
-  _in?: Maybe<Array<Scalars['uuid']>>;
-  _is_null?: Maybe<Scalars['Boolean']>;
-  _lt?: Maybe<Scalars['uuid']>;
-  _lte?: Maybe<Scalars['uuid']>;
-  _neq?: Maybe<Scalars['uuid']>;
-  _nin?: Maybe<Array<Scalars['uuid']>>;
-};
 
+export type ConnectMutation = (
+  { __typename?: 'mutation_root' }
+  & { insert_user?: Maybe<(
+    { __typename?: 'user_mutation_response' }
+    & Pick<User_Mutation_Response, 'affected_rows'>
+    & { returning: Array<(
+      { __typename?: 'user' }
+      & Pick<User, 'id' | 'name'>
+    )> }
+  )> }
+);
+
+
+export const ConnectDocument = gql`
+    mutation Connect($name: String!) {
+  insert_user(objects: {name: $name}) {
+    affected_rows
+    returning {
+      id
+      name
+    }
+  }
+}
+    `;
+
+export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
+
+
+const defaultWrapper: SdkFunctionWrapper = sdkFunction => sdkFunction();
+export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
+  return {
+    Connect(variables: ConnectMutationVariables): Promise<ConnectMutation> {
+      return withWrapper(() => client.request<ConnectMutation>(print(ConnectDocument), variables));
+    }
+  };
+}
+export type Sdk = ReturnType<typeof getSdk>;

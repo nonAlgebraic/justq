@@ -6,7 +6,6 @@
     "paths": {},
     "skipLibCheck": false,
     "jsx": "react",
-    "jsxFactory": "h",
     "strict": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
@@ -15,7 +14,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "esModuleInterop": true,
-    "importsNotUsedAsValues": "error"
+    "esModuleInterop": true
   }
 }

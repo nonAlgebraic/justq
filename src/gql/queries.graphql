@@ -1,0 +1,9 @@
+mutation Connect($name: String!) {
+  insert_user(objects: { name: $name }) {
+    affected_rows
+    returning {
+      id
+      name
+    }
+  }
+}
