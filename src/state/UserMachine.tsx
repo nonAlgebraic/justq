@@ -1,9 +1,17 @@
 import { Machine } from 'xstate';
 import type { Context, Schema, Event } from './types';
-import { connect } from './services.js';
+import { connect, join } from './services.js';
 import { setIdentity } from './actions.js';
 
 export default Machine<Context, Schema, Event>({
+  context: {
+    identity: {
+      id: '',
+      name: '',
+    },
+    room: '',
+    queuePosition: -1,
+  },
   initial: 'disconnected',
   states: {
     disconnected: {
@@ -32,7 +40,14 @@ export default Machine<Context, Schema, Event>({
             },
           },
         },
-        joining: {},
+        joining: {
+          invoke: {
+            src: join,
+            onDone: {
+              target: 'present',
+            },
+          },
+        },
         present: {
           initial: 'idle',
           states: {
@@ -46,6 +61,7 @@ export default Machine<Context, Schema, Event>({
             enqueueing: {},
             queued: {},
             dequeueing: {},
+            leaving: {},
           },
           on: {
             DEQUEUE: {
@@ -53,19 +69,18 @@ export default Machine<Context, Schema, Event>({
             },
           },
         },
-        leaving: {},
+        disconnecting: {},
       },
       on: {
         LEAVE: {
-          target: 'connected.leaving',
+          target: 'connected.present.leaving',
         },
       },
     },
-    disconnecting: {},
   },
   on: {
     DISCONNECT: {
-      target: 'disconnecting',
+      target: 'connected.disconnecting',
     },
   },
 });

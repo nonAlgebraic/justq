@@ -747,8 +747,8 @@ export type User = {
   queue?: Maybe<Queue>;
   queueId?: Maybe<Scalars['String']>;
   /** An object relationship */
-  room: Room;
-  roomId: Scalars['String'];
+  room?: Maybe<Room>;
+  roomId?: Maybe<Scalars['String']>;
 };
 
 /** aggregated selection of "user" */
@@ -927,25 +927,79 @@ export type ConnectMutationVariables = Exact<{
 
 export type ConnectMutation = (
   { __typename?: 'mutation_root' }
-  & { insert_user?: Maybe<(
-    { __typename?: 'user_mutation_response' }
-    & Pick<User_Mutation_Response, 'affected_rows'>
-    & { returning: Array<(
-      { __typename?: 'user' }
-      & Pick<User, 'id' | 'name'>
-    )> }
+  & { insert_user_one?: Maybe<(
+    { __typename?: 'user' }
+    & Pick<User, 'id' | 'name'>
+  )> }
+);
+
+export type DoesRoomExistQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DoesRoomExistQuery = (
+  { __typename?: 'query_root' }
+  & { room_by_pk?: Maybe<(
+    { __typename?: 'room' }
+    & Pick<Room, 'id'>
+  )> }
+);
+
+export type CreateRoomMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type CreateRoomMutation = (
+  { __typename?: 'mutation_root' }
+  & { insert_room_one?: Maybe<(
+    { __typename?: 'room' }
+    & Pick<Room, 'id'>
+  )> }
+);
+
+export type JoinMutationVariables = Exact<{
+  userId: Scalars['String'];
+  roomId: Scalars['String'];
+}>;
+
+
+export type JoinMutation = (
+  { __typename?: 'mutation_root' }
+  & { update_user_by_pk?: Maybe<(
+    { __typename?: 'user' }
+    & Pick<User, 'roomId'>
   )> }
 );
 
 
 export const ConnectDocument = gql`
     mutation Connect($name: String!) {
-  insert_user(objects: {name: $name}) {
-    affected_rows
-    returning {
-      id
-      name
-    }
+  insert_user_one(object: {name: $name}) {
+    id
+    name
+  }
+}
+    `;
+export const DoesRoomExistDocument = gql`
+    query DoesRoomExist($id: String!) {
+  room_by_pk(id: $id) {
+    id
+  }
+}
+    `;
+export const CreateRoomDocument = gql`
+    mutation CreateRoom($id: String!) {
+  insert_room_one(object: {id: $id}) {
+    id
+  }
+}
+    `;
+export const JoinDocument = gql`
+    mutation Join($userId: String!, $roomId: String!) {
+  update_user_by_pk(pk_columns: {id: $userId}, _set: {roomId: $roomId}) {
+    roomId
   }
 }
     `;
@@ -958,6 +1012,15 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     Connect(variables: ConnectMutationVariables): Promise<ConnectMutation> {
       return withWrapper(() => client.request<ConnectMutation>(print(ConnectDocument), variables));
+    },
+    DoesRoomExist(variables: DoesRoomExistQueryVariables): Promise<DoesRoomExistQuery> {
+      return withWrapper(() => client.request<DoesRoomExistQuery>(print(DoesRoomExistDocument), variables));
+    },
+    CreateRoom(variables: CreateRoomMutationVariables): Promise<CreateRoomMutation> {
+      return withWrapper(() => client.request<CreateRoomMutation>(print(CreateRoomDocument), variables));
+    },
+    Join(variables: JoinMutationVariables): Promise<JoinMutation> {
+      return withWrapper(() => client.request<JoinMutation>(print(JoinDocument), variables));
     }
   };
 }

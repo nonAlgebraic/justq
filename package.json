@@ -51,6 +51,7 @@
     "eslint-plugin-promise": "*",
     "eslint-plugin-standard": "*",
     "graphql": "*",
+    "hasura-cli": "*",
     "jest": "*",
     "jest-axe": "*",
     "jest-emotion": "*",

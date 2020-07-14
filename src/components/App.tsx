@@ -18,6 +18,16 @@ const App: FC = () => {
       >
         click
       </button>
+      <button
+        onClick={() => {
+          send({
+            type: 'JOIN',
+            roomId: 'my-cool-room',
+          });
+        }}
+      >
+        join
+      </button>
       <div className={styles.root}>Hello, {state.context.identity?.name}!</div>
       <div>{state.toStrings().pop()}</div>
     </>

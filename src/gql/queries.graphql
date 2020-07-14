@@ -1,9 +1,24 @@
 mutation Connect($name: String!) {
-  insert_user(objects: { name: $name }) {
-    affected_rows
-    returning {
-      id
-      name
-    }
+  insert_user_one(object: { name: $name }) {
+    id
+    name
+  }
+}
+
+query DoesRoomExist($id: String!) {
+  room_by_pk(id: $id) {
+    id
+  }
+}
+
+mutation CreateRoom($id: String!) {
+  insert_room_one(object: { id: $id }) {
+    id
+  }
+}
+
+mutation Join($userId: String!, $roomId: String!) {
+  update_user_by_pk(pk_columns: { id: $userId }, _set: { roomId: $roomId }) {
+    roomId
   }
 }

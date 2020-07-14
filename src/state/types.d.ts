@@ -1,8 +1,8 @@
-import type { StateSchema, EventObject } from 'xstate';
+import type { StateSchema, EventObject, InvokeCreator } from 'xstate';
 
 import type { User, Room } from '../types';
 
-export interface Schema extends StateSchema {
+interface Schema extends StateSchema {
   states: {
     disconnected: {};
     connecting: {};
@@ -16,19 +16,19 @@ export interface Schema extends StateSchema {
             enqueueing: {};
             queued: {};
             dequeueing: {};
+            leaving: {};
           };
         };
-        leaving: {};
+        disconnecting: {};
       };
     };
-    disconnecting: {};
   };
 }
 
-export interface Context {
-  identity?: Pick<User, 'id' | 'name'>;
-  room?: Room['id'];
-  queuePosition?: number;
+interface Context {
+  identity: Pick<User, 'id' | 'name'>;
+  room: Room['id'];
+  queuePosition: number;
 }
 
 interface ConnectEvent extends EventObject {
@@ -57,10 +57,15 @@ interface DequeueEvent extends EventObject {
   type: 'DEQUEUE';
 }
 
-export type Event =
+type Event =
   | ConnectEvent
   | DisconnectEvent
   | JoinEvent
   | LeaveEvent
   | EnqueueEvent
   | DequeueEvent;
+
+interface DoneEvent<T extends InvokeCreator<Context, Event>> {
+  type: string;
+  data: ReturnType<T> extends PromiseLike<infer U> ? U : string;
+}

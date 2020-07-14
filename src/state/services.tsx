@@ -1,29 +1,43 @@
-import type { InvokeCreator } from 'xstate';
-import type { ConnectEvent, Event, Context } from './types';
+import type { ConnectEvent, JoinEvent, Event, Context } from './types';
 
 import Client from '../GqlClient.js';
 
-export interface DoneEvent<T extends InvokeCreator<Context, Event>> {
-  type: string;
-  data: ReturnType<T> extends PromiseLike<infer U> ? U : string;
-}
-
 export const connect = async (_context: Context, event: Event) => {
-  try {
-    const { insert_user: result } = await Client.Connect({
-      name: (event as ConnectEvent).name,
-    });
-    if (!result?.returning[0]) {
-      throw new Error('no results');
-    }
-
-    debugger;
-
-    return result?.returning[0];
-  } catch (e) {
-    debugger;
-    throw e;
+  const { insert_user_one } = await Client.Connect({
+    name: (event as ConnectEvent).name,
+  });
+  if (!insert_user_one) {
+    throw new Error('no results');
   }
+
+  const { name, id } = insert_user_one;
+  return { name, id };
 };
 
-export type ConnectDoneEvent = DoneEvent<typeof connect>;
+export const join = async ({ identity }: Context, event: Event) => {
+  const { roomId } = event as JoinEvent;
+  const { room_by_pk } = await Client.DoesRoomExist({
+    id: roomId,
+  });
+
+  if (!room_by_pk) {
+    const { insert_room_one } = await Client.CreateRoom({
+      id: roomId,
+    });
+
+    if (!insert_room_one) {
+      throw new Error('could not create room');
+    }
+  }
+
+  const { update_user_by_pk } = await Client.Join({
+    userId: identity.id,
+    roomId,
+  });
+
+  if (!update_user_by_pk?.roomId) {
+    throw new Error('could not join room');
+  }
+
+  return update_user_by_pk.roomId;
+};
