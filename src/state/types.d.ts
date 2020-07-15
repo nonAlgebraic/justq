@@ -1,4 +1,5 @@
 import type { StateSchema, EventObject, InvokeCreator } from 'xstate';
+import type { GraphQLClient } from 'graphql-request';
 
 import type { User, Room } from '../types';
 
@@ -26,6 +27,7 @@ interface Schema extends StateSchema {
 }
 
 interface Context {
+  gqlClient: GraphQLClient;
   identity: Pick<User, 'id' | 'name'>;
   room: Room['id'];
   queuePosition: number;
@@ -36,36 +38,42 @@ interface ConnectEvent extends EventObject {
   name: User['name'];
 }
 
-interface DisconnectEvent extends EventObject {
-  type: 'DISCONNECT';
-}
-
 interface JoinEvent extends EventObject {
   type: 'JOIN';
   roomId: Room['id'];
-}
-
-interface LeaveEvent extends EventObject {
-  type: 'LEAVE';
 }
 
 interface EnqueueEvent extends EventObject {
   type: 'ENQUEUE';
 }
 
+interface UpdateQueuePositionEvent extends EventObject {
+  type: `UPDATE_QUEUE_POSITION`;
+  position: number;
+}
+
 interface DequeueEvent extends EventObject {
   type: 'DEQUEUE';
 }
 
+interface LeaveEvent extends EventObject {
+  type: 'LEAVE';
+}
+
+interface DisconnectEvent extends EventObject {
+  type: 'DISCONNECT';
+}
+
+interface DoneEvent<Service extends InvokeCreator<Context, Event>> {
+  type: string;
+  data: ReturnType<Service> extends PromiseLike<infer Data> ? Data : string;
+}
+
 type Event =
   | ConnectEvent
-  | DisconnectEvent
   | JoinEvent
-  | LeaveEvent
   | EnqueueEvent
-  | DequeueEvent;
-
-interface DoneEvent<T extends InvokeCreator<Context, Event>> {
-  type: string;
-  data: ReturnType<T> extends PromiseLike<infer U> ? U : string;
-}
+  | UpdateQueuePositionEvent
+  | DequeueEvent
+  | LeaveEvent
+  | DisconnectEvent;

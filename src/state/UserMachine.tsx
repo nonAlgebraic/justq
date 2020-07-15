@@ -1,10 +1,23 @@
 import { Machine } from 'xstate';
+import { GraphQLClient } from 'graphql-request';
 import type { Context, Schema, Event } from './types';
-import { connect, join } from './services.js';
-import { setIdentity } from './actions.js';
+import {
+  connect,
+  join,
+  enqueue,
+  dequeue,
+  leave,
+  disconnect,
+} from './services.js';
+import { setIdentity, setQueuePosition } from './actions.js';
 
 export default Machine<Context, Schema, Event>({
   context: {
+    gqlClient: new GraphQLClient('https://justq.herokuapp.com/v1/graphql', {
+      headers: {
+        'X-Hasura-Role': 'user',
+      },
+    }),
     identity: {
       id: '',
       name: '',
@@ -58,29 +71,43 @@ export default Machine<Context, Schema, Event>({
                 },
               },
             },
-            enqueueing: {},
-            queued: {},
-            dequeueing: {},
+            enqueueing: {
+              invoke: {
+                src: enqueue,
+                onDone: 'queued',
+              },
+            },
+            queued: {
+              on: {
+                DEQUEUE: {
+                  target: 'dequeueing',
+                },
+              },
+            },
+            dequeueing: {
+              invoke: {
+                src: dequeue,
+                onDone: {
+                  target: 'idle',
+                  actions: setQueuePosition,
+                },
+              },
+            },
             leaving: {},
           },
           on: {
-            DEQUEUE: {
-              target: 'present.dequeueing',
+            LEAVE: {
+              target: 'leaving',
             },
           },
         },
         disconnecting: {},
       },
       on: {
-        LEAVE: {
-          target: 'connected.present.leaving',
+        DISCONNECT: {
+          target: 'disconnecting',
         },
       },
-    },
-  },
-  on: {
-    DISCONNECT: {
-      target: 'connected.disconnecting',
     },
   },
 });

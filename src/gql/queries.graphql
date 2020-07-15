@@ -15,10 +15,40 @@ mutation CreateRoom($id: String!) {
   insert_room_one(object: { id: $id }) {
     id
   }
+  insert_queue_one(object: { id: $id }) {
+    id
+  }
 }
 
-mutation Join($userId: String!, $roomId: String!) {
-  update_user_by_pk(pk_columns: { id: $userId }, _set: { roomId: $roomId }) {
+mutation JoinDequeue($userId: String!, $roomId: String!) {
+  update_user_by_pk(
+    pk_columns: { id: $userId }
+    _set: { roomId: $roomId, queueId: null }
+  ) {
     roomId
+  }
+}
+
+mutation Enqueue($userId: String!, $roomId: String!) {
+  update_user_by_pk(
+    pk_columns: { id: $userId }
+    _set: { roomId: $roomId, queueId: $roomId }
+  ) {
+    roomId
+  }
+}
+
+mutation Leave($id: String!) {
+  update_user_by_pk(
+    pk_columns: { id: $id }
+    _set: { queueId: null, roomId: null }
+  ) {
+    id
+  }
+}
+
+mutation Disconnect($id: String!) {
+  delete_user_by_pk(id: $id) {
+    id
   }
 }

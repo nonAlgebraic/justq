@@ -933,6 +933,19 @@ export type ConnectMutation = (
   )> }
 );
 
+export type DisconnectMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DisconnectMutation = (
+  { __typename?: 'mutation_root' }
+  & { delete_user_by_pk?: Maybe<(
+    { __typename?: 'user' }
+    & Pick<User, 'id'>
+  )> }
+);
+
 export type DoesRoomExistQueryVariables = Exact<{
   id: Scalars['String'];
 }>;
@@ -956,20 +969,50 @@ export type CreateRoomMutation = (
   & { insert_room_one?: Maybe<(
     { __typename?: 'room' }
     & Pick<Room, 'id'>
+  )>, insert_queue_one?: Maybe<(
+    { __typename?: 'queue' }
+    & Pick<Queue, 'id'>
   )> }
 );
 
-export type JoinMutationVariables = Exact<{
+export type JoinDequeueMutationVariables = Exact<{
   userId: Scalars['String'];
   roomId: Scalars['String'];
 }>;
 
 
-export type JoinMutation = (
+export type JoinDequeueMutation = (
   { __typename?: 'mutation_root' }
   & { update_user_by_pk?: Maybe<(
     { __typename?: 'user' }
     & Pick<User, 'roomId'>
+  )> }
+);
+
+export type EnqueueMutationVariables = Exact<{
+  userId: Scalars['String'];
+  roomId: Scalars['String'];
+}>;
+
+
+export type EnqueueMutation = (
+  { __typename?: 'mutation_root' }
+  & { update_user_by_pk?: Maybe<(
+    { __typename?: 'user' }
+    & Pick<User, 'roomId'>
+  )> }
+);
+
+export type LeaveMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type LeaveMutation = (
+  { __typename?: 'mutation_root' }
+  & { update_user_by_pk?: Maybe<(
+    { __typename?: 'user' }
+    & Pick<User, 'id'>
   )> }
 );
 
@@ -979,6 +1022,13 @@ export const ConnectDocument = gql`
   insert_user_one(object: {name: $name}) {
     id
     name
+  }
+}
+    `;
+export const DisconnectDocument = gql`
+    mutation Disconnect($id: String!) {
+  delete_user_by_pk(id: $id) {
+    id
   }
 }
     `;
@@ -994,12 +1044,29 @@ export const CreateRoomDocument = gql`
   insert_room_one(object: {id: $id}) {
     id
   }
+  insert_queue_one(object: {id: $id}) {
+    id
+  }
 }
     `;
-export const JoinDocument = gql`
-    mutation Join($userId: String!, $roomId: String!) {
-  update_user_by_pk(pk_columns: {id: $userId}, _set: {roomId: $roomId}) {
+export const JoinDequeueDocument = gql`
+    mutation JoinDequeue($userId: String!, $roomId: String!) {
+  update_user_by_pk(pk_columns: {id: $userId}, _set: {roomId: $roomId, queueId: null}) {
     roomId
+  }
+}
+    `;
+export const EnqueueDocument = gql`
+    mutation Enqueue($userId: String!, $roomId: String!) {
+  update_user_by_pk(pk_columns: {id: $userId}, _set: {roomId: $roomId, queueId: $roomId}) {
+    roomId
+  }
+}
+    `;
+export const LeaveDocument = gql`
+    mutation Leave($id: String!) {
+  update_user_by_pk(pk_columns: {id: $id}, _set: {queueId: null, roomId: null}) {
+    id
   }
 }
     `;
@@ -1013,14 +1080,23 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     Connect(variables: ConnectMutationVariables): Promise<ConnectMutation> {
       return withWrapper(() => client.request<ConnectMutation>(print(ConnectDocument), variables));
     },
+    Disconnect(variables: DisconnectMutationVariables): Promise<DisconnectMutation> {
+      return withWrapper(() => client.request<DisconnectMutation>(print(DisconnectDocument), variables));
+    },
     DoesRoomExist(variables: DoesRoomExistQueryVariables): Promise<DoesRoomExistQuery> {
       return withWrapper(() => client.request<DoesRoomExistQuery>(print(DoesRoomExistDocument), variables));
     },
     CreateRoom(variables: CreateRoomMutationVariables): Promise<CreateRoomMutation> {
       return withWrapper(() => client.request<CreateRoomMutation>(print(CreateRoomDocument), variables));
     },
-    Join(variables: JoinMutationVariables): Promise<JoinMutation> {
-      return withWrapper(() => client.request<JoinMutation>(print(JoinDocument), variables));
+    JoinDequeue(variables: JoinDequeueMutationVariables): Promise<JoinDequeueMutation> {
+      return withWrapper(() => client.request<JoinDequeueMutation>(print(JoinDequeueDocument), variables));
+    },
+    Enqueue(variables: EnqueueMutationVariables): Promise<EnqueueMutation> {
+      return withWrapper(() => client.request<EnqueueMutation>(print(EnqueueDocument), variables));
+    },
+    Leave(variables: LeaveMutationVariables): Promise<LeaveMutation> {
+      return withWrapper(() => client.request<LeaveMutation>(print(LeaveDocument), variables));
     }
   };
 }
