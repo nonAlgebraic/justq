@@ -1,9 +1,7 @@
 import type { ConnectEvent, JoinEvent, Event, Context } from './types';
 
-import getClient from '../getClient.js';
-
-export const connect = async (_context: Context, event: Event) => {
-  const { insert_user_one } = await getClient().Connect({
+export const connect = async ({ gqlClient }: Context, event: Event) => {
+  const { insert_user_one } = await gqlClient.Connect({
     name: (event as ConnectEvent).name,
   });
   if (!insert_user_one) {
@@ -16,9 +14,10 @@ export const connect = async (_context: Context, event: Event) => {
 
 const doJoinDequeue = async (
   userId: Context['identity']['id'],
-  roomId: Context['room']
+  roomId: Context['room'],
+  gqlClient: Context['gqlClient']
 ) => {
-  const { update_user_by_pk } = await getClient().JoinDequeue({
+  const { update_user_by_pk } = await gqlClient.JoinDequeue({
     userId,
     roomId,
   });
@@ -29,25 +28,25 @@ const doJoinDequeue = async (
 };
 
 export const join = async (
-  { identity: { id: userId } }: Context,
+  { identity: { id: userId }, gqlClient }: Context,
   event: Event
 ) => {
   const { roomId } = event as JoinEvent;
-  const { room_by_pk } = await getClient().DoesRoomExist({
+  const { room_by_pk } = await gqlClient.DoesRoomExist({
     id: roomId,
   });
 
   if (!room_by_pk) {
-    const { insert_room_one, insert_queue_one } = await getClient().CreateRoom({
+    const { insert_room_one, insert_queue_one } = await gqlClient.CreateRoom({
       id: roomId,
     });
 
-    if (!insert_room_one || insert_queue_one) {
+    if (!insert_room_one || !insert_queue_one) {
       throw new Error('could not insert room');
     }
   }
 
-  await doJoinDequeue(userId, roomId);
+  await doJoinDequeue(userId, roomId, gqlClient);
 
   return roomId;
 };
@@ -55,8 +54,9 @@ export const join = async (
 export const enqueue = async ({
   identity: { id: userId },
   room: roomId,
+  gqlClient,
 }: Context) => {
-  const { update_user_by_pk } = await getClient().Enqueue({
+  const { update_user_by_pk } = await gqlClient.Enqueue({
     userId,
     roomId,
   });
@@ -64,18 +64,25 @@ export const enqueue = async ({
   if (!update_user_by_pk) {
     throw new Error('could not update user to enqueue');
   }
+
+  const result = await gqlClient.GetUsersInRoom({
+    id: roomId,
+  });
+
+  console.log({ result });
 };
 
 export const dequeue = async ({
   identity: { id: userId },
   room: roomId,
+  gqlClient,
 }: Context) => {
-  await doJoinDequeue(userId, roomId);
+  await doJoinDequeue(userId, roomId, gqlClient);
   return { position: -1 };
 };
 
-export const leave = async ({ identity: { id } }: Context) => {
-  const { update_user_by_pk } = await getClient().Leave({
+export const leave = async ({ identity: { id }, gqlClient }: Context) => {
+  const { update_user_by_pk } = await gqlClient.Leave({
     id,
   });
 
@@ -84,8 +91,8 @@ export const leave = async ({ identity: { id } }: Context) => {
   }
 };
 
-export const disconnect = async ({ identity: { id } }: Context) => {
-  const { delete_user_by_pk } = await getClient().Disconnect({
+export const disconnect = async ({ identity: { id }, gqlClient }: Context) => {
+  const { delete_user_by_pk } = await gqlClient.Disconnect({
     id: id,
   });
 

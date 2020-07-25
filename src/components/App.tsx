@@ -16,7 +16,7 @@ const App: FC = () => {
           });
         }}
       >
-        click
+        connect
       </button>
       <button
         onClick={() => {
@@ -27,6 +27,15 @@ const App: FC = () => {
         }}
       >
         join
+      </button>
+      <button
+        onClick={() => {
+          send({
+            type: 'ENQUEUE',
+          });
+        }}
+      >
+        enqueue
       </button>
       <div className={styles.root}>Hello, {state.context.identity?.name}!</div>
       <div>{state.toStrings().pop()}</div>

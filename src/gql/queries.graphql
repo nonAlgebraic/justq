@@ -38,6 +38,13 @@ mutation Enqueue($userId: String!, $roomId: String!) {
   }
 }
 
+query GetUsersInRoom($id: String!) {
+  user(where: { roomId: { _eq: $id } }) {
+    id
+    name
+  }
+}
+
 mutation Leave($id: String!) {
   update_user_by_pk(
     pk_columns: { id: $id }

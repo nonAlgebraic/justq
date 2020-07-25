@@ -1,5 +1,5 @@
 import type { StateSchema, EventObject, InvokeCreator } from 'xstate';
-import type { GraphQLClient } from 'graphql-request';
+import type { getSdk } from '../generated/graphql';
 
 import type { User, Room } from '../types';
 
@@ -27,7 +27,7 @@ interface Schema extends StateSchema {
 }
 
 interface Context {
-  gqlClient: GraphQLClient;
+  gqlClient: ReturnType<typeof getSdk>;
   identity: Pick<User, 'id' | 'name'>;
   room: Room['id'];
   queuePosition: number;

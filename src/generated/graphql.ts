@@ -933,19 +933,6 @@ export type ConnectMutation = (
   )> }
 );
 
-export type DisconnectMutationVariables = Exact<{
-  id: Scalars['String'];
-}>;
-
-
-export type DisconnectMutation = (
-  { __typename?: 'mutation_root' }
-  & { delete_user_by_pk?: Maybe<(
-    { __typename?: 'user' }
-    & Pick<User, 'id'>
-  )> }
-);
-
 export type DoesRoomExistQueryVariables = Exact<{
   id: Scalars['String'];
 }>;
@@ -1003,6 +990,19 @@ export type EnqueueMutation = (
   )> }
 );
 
+export type GetUsersInRoomQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type GetUsersInRoomQuery = (
+  { __typename?: 'query_root' }
+  & { user: Array<(
+    { __typename?: 'user' }
+    & Pick<User, 'id' | 'name'>
+  )> }
+);
+
 export type LeaveMutationVariables = Exact<{
   id: Scalars['String'];
 }>;
@@ -1016,19 +1016,25 @@ export type LeaveMutation = (
   )> }
 );
 
+export type DisconnectMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DisconnectMutation = (
+  { __typename?: 'mutation_root' }
+  & { delete_user_by_pk?: Maybe<(
+    { __typename?: 'user' }
+    & Pick<User, 'id'>
+  )> }
+);
+
 
 export const ConnectDocument = gql`
     mutation Connect($name: String!) {
   insert_user_one(object: {name: $name}) {
     id
     name
-  }
-}
-    `;
-export const DisconnectDocument = gql`
-    mutation Disconnect($id: String!) {
-  delete_user_by_pk(id: $id) {
-    id
   }
 }
     `;
@@ -1063,9 +1069,24 @@ export const EnqueueDocument = gql`
   }
 }
     `;
+export const GetUsersInRoomDocument = gql`
+    query GetUsersInRoom($id: String!) {
+  user(where: {roomId: {_eq: $id}}) {
+    id
+    name
+  }
+}
+    `;
 export const LeaveDocument = gql`
     mutation Leave($id: String!) {
   update_user_by_pk(pk_columns: {id: $id}, _set: {queueId: null, roomId: null}) {
+    id
+  }
+}
+    `;
+export const DisconnectDocument = gql`
+    mutation Disconnect($id: String!) {
+  delete_user_by_pk(id: $id) {
     id
   }
 }
@@ -1080,9 +1101,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     Connect(variables: ConnectMutationVariables): Promise<ConnectMutation> {
       return withWrapper(() => client.request<ConnectMutation>(print(ConnectDocument), variables));
     },
-    Disconnect(variables: DisconnectMutationVariables): Promise<DisconnectMutation> {
-      return withWrapper(() => client.request<DisconnectMutation>(print(DisconnectDocument), variables));
-    },
     DoesRoomExist(variables: DoesRoomExistQueryVariables): Promise<DoesRoomExistQuery> {
       return withWrapper(() => client.request<DoesRoomExistQuery>(print(DoesRoomExistDocument), variables));
     },
@@ -1095,8 +1113,14 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     Enqueue(variables: EnqueueMutationVariables): Promise<EnqueueMutation> {
       return withWrapper(() => client.request<EnqueueMutation>(print(EnqueueDocument), variables));
     },
+    GetUsersInRoom(variables: GetUsersInRoomQueryVariables): Promise<GetUsersInRoomQuery> {
+      return withWrapper(() => client.request<GetUsersInRoomQuery>(print(GetUsersInRoomDocument), variables));
+    },
     Leave(variables: LeaveMutationVariables): Promise<LeaveMutation> {
       return withWrapper(() => client.request<LeaveMutation>(print(LeaveDocument), variables));
+    },
+    Disconnect(variables: DisconnectMutationVariables): Promise<DisconnectMutation> {
+      return withWrapper(() => client.request<DisconnectMutation>(print(DisconnectDocument), variables));
     }
   };
 }
